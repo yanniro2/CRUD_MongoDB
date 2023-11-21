@@ -1,10 +1,12 @@
+"use client";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import RemoveBtn from "./RemoveBtn";
 import { HiPencilAlt } from "react-icons/hi";
 
 const getTopics = async () => {
   try {
-    const res = await fetch("http://localhost:3000/api/topics", {
+    const res = await fetch("http://localhost:3001/api/topics", {
       cache: "no-store",
     });
 
@@ -18,16 +20,31 @@ const getTopics = async () => {
   }
 };
 
-export default async function TopicsList() {
-  const { topics } = await getTopics();
+const TopicsList = () => {
+  const [topics, setTopics] = useState([]);
+
+  const fetchTopics = async () => {
+    const { topics } = await getTopics();
+    setTopics(topics);
+  };
+
+  useEffect(() => {
+    fetchTopics(); // Fetch topics initially
+
+    const intervalId = setInterval(() => {
+      fetchTopics(); // Fetch topics every 1 second
+    }, 100);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []); // Empty dependency array ensures the effect runs only once on mount
 
   return (
     <>
       {topics.map((t) => (
         <div
           key={t._id}
-          className="p-4 border border-slate-300 my-3 flex justify-between gap-5 items-start"
-        >
+          className="p-4 border border-slate-300 my-3 flex justify-between gap-5 items-start">
           <div>
             <h2 className="font-bold text-2xl">{t.title}</h2>
             <div>{t.description}</div>
@@ -43,4 +60,6 @@ export default async function TopicsList() {
       ))}
     </>
   );
-}
+};
+
+export default TopicsList;
